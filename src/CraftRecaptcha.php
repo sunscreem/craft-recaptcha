@@ -110,9 +110,17 @@ class CraftRecaptcha extends Plugin
 
         // Set up contact form hook.
         $settings = CraftRecaptcha::$plugin->getSettings();
+        if (
+            class_exists(Submission::class)
+            && $settings->validateContactForm
+            & !Craft::$app->request->isConsoleRequest
+        ) {
+            Event::on(Submission::class, Submission::EVENT_BEFORE_VALIDATE, function (ModelEvent $e) {
 
-        if (class_exists(Submission::class) && $settings->validateContactForm & !Craft::$app->getRequest()->getParam('skip-recaptcha')) {
-            Event::on(Submission::class, Submission::EVENT_BEFORE_VALIDATE, function(ModelEvent $e) {
+                if (Craft::$app->getRequest()->getParam('skip-recaptcha')) {
+                    return;
+                }
+      
                 /** @var Submission $submission */
                 $submission = $e->sender;
 
